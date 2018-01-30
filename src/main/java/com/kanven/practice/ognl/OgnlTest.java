@@ -3,14 +3,12 @@ package com.kanven.practice.ognl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
-
 import ognl.Ognl;
 import ognl.OgnlException;
 
 public class OgnlTest {
 
-	@Test
+
 	public void testContext() throws OgnlException {
 		Map<String, Object> context = new HashMap<String, Object>();
 		context.put("who", "who am I?");
@@ -21,7 +19,6 @@ public class OgnlTest {
 		System.out.println(Ognl.getValue("#context.who", context, student));
 	}
 
-	@Test
 	public void testGetValue() throws OgnlException {
 		Student student = new Student();
 		student.setId(1);
@@ -30,7 +27,6 @@ public class OgnlTest {
 		System.out.println(Ognl.getValue("name", student));
 	}
 
-	@Test
 	public void testSetValue() throws OgnlException {
 		Student student = new Student();
 		Ognl.setValue("id", student, 1);
@@ -38,7 +34,6 @@ public class OgnlTest {
 		System.out.println(student);
 	}
 
-	@Test
 	public void testSetNestObject() throws OgnlException {
 		Person person = new Person();
 		person.setStudent(new Student()); // 需要先初始化实体类，是否可以不需要这一步呢？

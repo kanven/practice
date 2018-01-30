@@ -3,6 +3,7 @@ package com.kanven.practice.brave.http;
 import brave.Span;
 import brave.Tracer;
 import brave.Tracing;
+import zipkin2.Endpoint;
 import zipkin2.reporter.AsyncReporter;
 import zipkin2.reporter.okhttp3.OkHttpSender;
 
@@ -15,8 +16,9 @@ public class BraveHttpSender {
 		Tracing tracing = Tracing.newBuilder().localServiceName("practice").spanReporter(reporter).build();
 		Tracer tracer = tracing.tracer();
 		Span span = tracer.newTrace();
-		span.name("1111");
+		span.name("rpc");
 		span.tag("time", "99099");
+		span.remoteEndpoint(Endpoint.newBuilder().serviceName("backend").ip("127.0.0.1").port(9090).build());
 		span.start();
 		span.finish();
 		reporter.close();
