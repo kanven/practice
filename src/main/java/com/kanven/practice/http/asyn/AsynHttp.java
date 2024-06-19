@@ -13,21 +13,18 @@ import org.apache.http.nio.IOControl;
 import org.apache.http.nio.client.methods.AsyncCharConsumer;
 import org.apache.http.nio.client.methods.HttpAsyncMethods;
 import org.apache.http.protocol.HttpContext;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 public class AsynHttp {
 
 	private CloseableHttpAsyncClient client;
 
-	@Before
+	//@Before
 	public void befor() {
 		client = HttpAsyncClients.createDefault();
 		client.start();
 	}
 
-	@Test
+	//@Test
 	public void testAysn() throws Exception {
 		HttpGet get = new HttpGet("https://www.baidu.com");
 		Future<HttpResponse> future = client.execute(get, null);
@@ -35,7 +32,7 @@ public class AsynHttp {
 		System.out.println(response.getStatusLine() + ";" + response.getEntity());
 	}
 
-	@Test
+	//@Test
 	public void testConsumer() throws Exception {
 		Future<Boolean> future = client.execute(HttpAsyncMethods.createGet("https://www.baidu.com"),
 				new AsyncCharConsumer<Boolean>() {
@@ -66,7 +63,7 @@ public class AsynHttp {
 		}
 	}
 
-	@After
+	//@After
 	public void close() {
 		try {
 			if (client != null) {
