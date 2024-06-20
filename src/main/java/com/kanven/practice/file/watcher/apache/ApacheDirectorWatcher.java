@@ -1,38 +1,34 @@
 package com.kanven.practice.file.watcher.apache;
 
-import com.kanven.practice.file.watcher.DirectorWatcherComponent;
+import com.kanven.practice.file.watcher.DirectorWatcher;
 import com.kanven.practice.file.watcher.Watcher;
-import com.kanven.practice.file.watcher.apache.DirectorListener;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Slf4j
-public class DirectorWatcher implements DirectorWatcherComponent {
-
-    private final Path path;
+public class ApacheDirectorWatcher extends DirectorWatcher {
 
     private final FileAlterationMonitor monitor;
 
     private final DirectorListener listener = new DirectorListener();
 
-    public DirectorWatcher(String path) {
+    public ApacheDirectorWatcher(String path) {
         this(path, -1);
     }
 
-    public DirectorWatcher(String path, long interval) {
-        this.path = Paths.get(path);
+    public ApacheDirectorWatcher(String path, long interval) {
+        super(path, true);
         this.monitor = interval > 0 ? new FileAlterationMonitor(interval) : new FileAlterationMonitor();
         FileAlterationObserver observer = new FileAlterationObserver(new File(path));
         observer.addListener(listener);
         this.monitor.addObserver(observer);
     }
 
-    public void start() {
+    @Override
+    protected void onStart() {
         try {
             this.monitor.start();
         } catch (Exception e) {
@@ -40,8 +36,8 @@ public class DirectorWatcher implements DirectorWatcherComponent {
         }
     }
 
-
-    public void stop() {
+    @Override
+    protected void onClose() {
         try {
             this.monitor.stop();
         } catch (Exception e) {
@@ -50,7 +46,7 @@ public class DirectorWatcher implements DirectorWatcherComponent {
     }
 
     @Override
-    public void listen(Watcher watcher) {
+    protected void onListen(Watcher watcher) {
         this.listen(watcher);
     }
 

@@ -15,11 +15,17 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 public class DirectorListener implements FileAlterationListener {
 
-    List<Watcher> watchers = new CopyOnWriteArrayList<>();
+    private List<Watcher> watchers = new CopyOnWriteArrayList<>();
 
     public void addWatcher(Watcher watcher) {
         if (watcher != null) {
             this.watchers.add(watcher);
+        }
+    }
+
+    public void clear() {
+        if (watchers.size() > 0) {
+            watchers.clear();
         }
     }
 

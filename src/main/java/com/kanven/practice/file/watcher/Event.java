@@ -1,8 +1,6 @@
 package com.kanven.practice.file.watcher;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.ToString;
 
 import java.nio.file.Path;
 
@@ -13,10 +11,17 @@ public class Event {
 
     private Path child;
 
+    private Path old;
+
     private EventType type;
 
     public Event() {
 
+    }
+
+    public Event(EventType type, Path parent, Path child, Path old) {
+        this(type, parent, child);
+        this.old = old;
     }
 
     public Event(EventType type, Path parent, Path child) {
@@ -28,7 +33,17 @@ public class Event {
     public enum EventType {
         NEW,
         MODIFY,
+        RENAME,
         DELETED;
     }
 
+    @Override
+    public String toString() {
+        return "Event{" +
+                "parent=" + parent +
+                ", child=" + child +
+                ", old=" + old +
+                ", type=" + type +
+                '}';
+    }
 }
