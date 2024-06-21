@@ -22,7 +22,7 @@ public abstract class DirectorWatcher implements Closeable {
 
     protected final boolean recursion;
 
-    public DirectorWatcher(String path, boolean recursion) {
+    public DirectorWatcher(String path, Boolean recursion) {
         this.path = path;
         this.recursion = recursion;
         File file = new File(path);

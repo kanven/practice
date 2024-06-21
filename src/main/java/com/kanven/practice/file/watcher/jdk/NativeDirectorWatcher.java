@@ -137,6 +137,8 @@ public class NativeDirectorWatcher extends DirectorWatcher {
                 log.error(path.toString() + "'s watcher close action occur an exception!", e);
             }
         });
+        watchers.clear();
+        paths.clear();
         if (!executor.isShutdown()) {
             executor.shutdown();
         }

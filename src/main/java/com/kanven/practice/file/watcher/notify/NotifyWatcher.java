@@ -27,7 +27,7 @@ public class NotifyWatcher extends DirectorWatcher {
 
     private int watchId = -1;
 
-    public NotifyWatcher(String path, boolean recursion) {
+    public NotifyWatcher(String path, Boolean recursion) {
         super(path, recursion);
     }
 
@@ -84,25 +84,6 @@ public class NotifyWatcher extends DirectorWatcher {
             }
             watchers.clear();
             watchId = -1;
-        }
-    }
-
-    public static void main(String[] args) throws Exception {
-        System.out.println("===" + System.getProperty("user.dir"));
-        System.out.println("===" + System.getProperty("java.class.path"));
-        System.out.println("===" + System.getProperty("java.library.path"));
-        //System.setProperty("java.library.path","/Users/jiangyl/Downloads/jnotify-lib-0.94/libjnotify.jnilib");
-        String path = "/Applications/test";
-        NotifyWatcher watcher = new NotifyWatcher(path, true);
-        watcher.listen(new Watcher() {
-            @Override
-            public void watcher(Event event) {
-                System.out.println(event);
-            }
-        });
-        watcher.start();
-        while (true) {
-
         }
     }
 

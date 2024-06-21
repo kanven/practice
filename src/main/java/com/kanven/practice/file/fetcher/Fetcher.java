@@ -1,83 +1,165 @@
 package com.kanven.practice.file.fetcher;
 
+import com.kanven.practice.Configuration;
 import com.kanven.practice.file.bulk.BulkReader;
 import com.kanven.practice.file.bulk.FileMMPBulkReader;
+import com.kanven.practice.file.bulk.FileRandomBulkReader;
+import com.kanven.practice.file.bulk.Listener;
+import com.kanven.practice.file.fetcher.sched.Executor;
+import com.kanven.practice.file.watcher.DirectorWatcher;
+import com.kanven.practice.file.watcher.Event;
 import com.kanven.practice.file.watcher.apache.ApacheDirectorWatcher;
+import com.kanven.practice.file.watcher.jdk.NativeDirectorWatcher;
+import com.kanven.practice.file.watcher.notify.NotifyWatcher;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
+import static com.kanven.practice.Configuration.*;
 
-public class Fetcher {
+@Slf4j
+public class Fetcher implements Executor<FileEntry> {
 
-    public static void main(String[] args) throws Exception {
-        String dir = "/Applications/metric/logs";
-        List<FileEntry> entries = new ArrayList<>(0);
-        try (ApacheDirectorWatcher watcher = new ApacheDirectorWatcher(dir)) {
-            watcher.listen(event -> {
-                switch (event.getType()) {
-                    case NEW:
-                        String path = event.getParent().toString() + File.separator + event.getChild();
-                        File file = new File(path);
-                        if (file.isFile()) {
+    private final CopyOnWriteArrayList<FileEntry> entries = new CopyOnWriteArrayList<>();
+
+    private final CopyOnWriteArrayList<Listener> listeners = new CopyOnWriteArrayList<>();
+
+    private final DirectorWatcher watcher;
+
+    private final ListenerWrapper wrapper = new ListenerWrapper();
+
+    public Fetcher() throws Exception {
+        this.watcher = buildWatcher();
+        this.init();
+    }
+
+    private void init() {
+        watcher.listen(event -> {
+            switch (event.getType()) {
+                case NEW:
+                    String path = event.getParent().toString() + File.separator + event.getChild();
+                    File file = new File(path);
+                    if (file.isFile()) {
+                        try {
+                            entries.add(new FileEntry(event.getParent().toString(), event.getChild().toString(), buildBulkReader(file)));
+                        } catch (Exception e) {
+
+                        }
+                    }
+                    break;
+                case RENAME:
+                    List<FileEntry> fes = filterEntries(event.getParent().toString(), event.getOld().toString(), entries);
+                    fes.forEach(entry -> {
+                        entry.setName(event.getChild().toString());
+                    });
+                    break;
+                case MODIFY:
+                    path = event.getParent().toString() + File.separator + event.getChild();
+                    file = new File(path);
+                    if (file.isFile()) {
+                        fes = filterEntries(event, entries);
+                        if (fes.isEmpty()) {
                             try {
-                                BulkReader reader = new FileMMPBulkReader(file, Charset.forName("UTF-8"));
-                                entries.add(new FileEntry(event.getParent().toString(), event.getChild().toString(), reader));
+                                FileEntry entry = new FileEntry(event.getParent().toString(), event.getChild().toString(), buildBulkReader(file));
+                                entries.add(entry);
+                                fes.add(entry);
                             } catch (Exception e) {
-
+                                log.error("", e);
                             }
                         }
-                        break;
-                    case MODIFY:
-
-                        break;
-                    case DELETED:
-                        List<FileEntry> fes = entries.stream().filter(entry -> entry.name.equals(event.getChild().toString())
-                                && entry.dir.equals(event.getParent().toString())).collect(Collectors.toList());
                         fes.forEach(entry -> {
-                            try {
-                                entries.remove(entry);
-                                entry.reader.close();
-                            } catch (Exception e) {
-
-                            }
+                            entry.increment();
                         });
-                        break;
-                }
-            });
+                    }
+                    break;
+                case DELETED:
+                    filterEntries(event, entries).forEach(entry -> {
+                        entries.remove(entry);
+                        entry.close();
+                    });
+                    break;
+            }
+        });
+        watcher.start();
+    }
+
+    @Override
+    public void execute(FileEntry entry) {
+        try {
+            entry.read(wrapper);
+        } catch (Exception e) {
+
         }
     }
 
-    private static class FileEntry {
-
-        private String dir;
-
-        private String name;
-
-        private BulkReader reader;
-
-        public FileEntry(String dir, String name, BulkReader reader) {
-            this.dir = dir;
-            this.name = name;
-            this.reader = reader;
-        }
+    private class ListenerWrapper implements Listener {
 
         @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            FileEntry fileEntry = (FileEntry) o;
-            return Objects.equals(dir, fileEntry.dir) &&
-                    Objects.equals(name, fileEntry.name);
+        public void listen(String line) {
+            listeners.forEach(listener -> {
+                listener.listen(line);
+            });
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(dir, name);
+    }
+
+    private List<FileEntry> filterEntries(Event event, List<FileEntry> entries) {
+        return entries.stream().filter(entry -> entry.getName().equals(event.getChild().toString())
+                && entry.getDir().equals(event.getParent().toString())).collect(Collectors.toList());
+    }
+
+    private List<FileEntry> filterEntries(String dir, String name, List<FileEntry> entries) {
+        return entries.stream().filter(entry -> entry.getDir().equals(name)
+                && entry.getDir().equals(dir)).collect(Collectors.toList());
+    }
+
+
+    private DirectorWatcher buildWatcher() throws Exception {
+        boolean recursion = Configuration.getBoolean(LEECH_DIR_RECURSION, false);
+        String dir = Configuration.getString(LEECH_DIR, "");
+        String name = Configuration.getString(LEECH_WATCHER_CLASS, NotifyWatcher.class.getName());
+        if (NotifyWatcher.class.getName().equals(name)) {
+            Class<NotifyWatcher> clazz = NotifyWatcher.class;
+            Constructor<NotifyWatcher> constructor = clazz.getConstructor(String.class, Boolean.class);
+            return constructor.newInstance(dir, recursion);
+        } else if (ApacheDirectorWatcher.class.getName().equals(name)) {
+            long interval = Configuration.getLong(LEECH_WATCHER_APACHE_INTERVAL, 1000L);
+            Class<ApacheDirectorWatcher> clazz = ApacheDirectorWatcher.class;
+            Constructor<ApacheDirectorWatcher> constructor = clazz.getConstructor(String.class, Long.class);
+            return constructor.newInstance(dir, interval);
+        } else if (NativeDirectorWatcher.class.getName().equals(name)) {
+            Class<NativeDirectorWatcher> clazz = NativeDirectorWatcher.class;
+            Constructor<NativeDirectorWatcher> constructor = clazz.getConstructor(String.class, Boolean.class);
+            return constructor.newInstance(dir, recursion);
+        }
+        return null;
+    }
+
+    private BulkReader buildBulkReader(File file) throws Exception {
+        String charset = Configuration.getString(LEECH_CHARSET, "UTF-8");
+        String name = Configuration.getString(LEECH_BULK_READER_CLASS, FileMMPBulkReader.class.getName());
+        if (FileMMPBulkReader.class.getName().equals(name)) {
+            Class<FileMMPBulkReader> clazz = FileMMPBulkReader.class;
+            Constructor<FileMMPBulkReader> constructor = clazz.getConstructor(File.class, Charset.class);
+            return constructor.newInstance(file, Charset.forName(charset));
+        } else if (FileRandomBulkReader.class.getName().equals(name)) {
+            Class<FileRandomBulkReader> clazz = FileRandomBulkReader.class;
+            Constructor<FileRandomBulkReader> constructor = clazz.getConstructor(File.class, Charset.class);
+            return constructor.newInstance(file, Charset.forName(charset));
+        }
+        return null;
+    }
+
+
+    public static void main(String[] args) throws Exception {
+        Fetcher fetcher = new Fetcher();
+        while (true) {
+
         }
     }
 

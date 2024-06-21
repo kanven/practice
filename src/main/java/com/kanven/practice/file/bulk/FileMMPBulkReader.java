@@ -12,7 +12,6 @@ public class FileMMPBulkReader extends BulkReader {
     public FileMMPBulkReader(File file, Charset charset) throws Exception {
         super(file, charset);
         this.channel = this.raf.getChannel();
-        this.size = this.channel.size();
     }
 
     public void read(Listener listener) throws Exception {
