@@ -61,17 +61,15 @@ public class Configuration {
         return defaultValue;
     }
 
-    public final static String LEECH_DIR = "leech.dir";
-
-    public final static String LEECH_DIR_RECURSION = "leech.dir.recursion";
-
     public final static String LEECH_CHARSET = "leech.charset";
 
-    public final static String LEECH_WATCHER_CLASS = "leech.watcher.class";
+    public final static String LEECH_DIR = "leech.dir";
 
-    public final static String LEECH_WATCHER_APACHE_INTERVAL = "leech.watcher.apache.interval";
+    public final static String LEECH_DIR_WATCHER_RECURSION = "leech.dir.watcher.recursion";
 
-    public final static String LEECH_BULK_READER_CLASS = "leech.bulk.reader.class";
+    public final static String LEECH_DIR_WATCHER_NAME = "leech.dir.watcher.name";
+
+    public final static String LEECH_BULK_READER_NAME = "leech.bulk.reader.name";
 
     public final static String LEECH_BULK_FETCH_HISTORY = "leech.bulk.reader.fetch.history";
 

@@ -1,5 +1,6 @@
 package com.kanven.practice.file.watcher.notify;
 
+import com.kanven.practice.file.extension.SpiMate;
 import com.kanven.practice.file.watcher.DirectorWatcher;
 import com.kanven.practice.file.watcher.Event;
 import com.kanven.practice.file.watcher.Watcher;
@@ -21,6 +22,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * </ul>
  */
 @Slf4j
+@SpiMate(name = "notify")
 public class NotifyWatcher extends DirectorWatcher {
 
     private List<Watcher> watchers = new CopyOnWriteArrayList<>();

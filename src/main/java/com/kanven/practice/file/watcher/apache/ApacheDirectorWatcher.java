@@ -1,5 +1,6 @@
 package com.kanven.practice.file.watcher.apache;
 
+import com.kanven.practice.file.extension.SpiMate;
 import com.kanven.practice.file.watcher.DirectorWatcher;
 import com.kanven.practice.file.watcher.Watcher;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import org.apache.commons.io.monitor.FileAlterationObserver;
 import java.io.File;
 
 @Slf4j
+@SpiMate(name = "default")
 public class ApacheDirectorWatcher extends DirectorWatcher {
 
     private final FileAlterationMonitor monitor;
@@ -16,12 +18,12 @@ public class ApacheDirectorWatcher extends DirectorWatcher {
     private final DirectorListener listener = new DirectorListener();
 
     public ApacheDirectorWatcher(String path) {
-        this(path, -1);
+        this(path, false);
     }
 
-    public ApacheDirectorWatcher(String path, long interval) {
-        super(path, true);
-        this.monitor = interval > 0 ? new FileAlterationMonitor(interval) : new FileAlterationMonitor();
+    public ApacheDirectorWatcher(String path, boolean recursion) {
+        super(path, recursion);
+        this.monitor = new FileAlterationMonitor(1000L);
         FileAlterationObserver observer = new FileAlterationObserver(new File(path));
         observer.addListener(listener);
         this.monitor.addObserver(observer);

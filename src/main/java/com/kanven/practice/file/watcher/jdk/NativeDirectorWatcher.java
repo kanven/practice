@@ -1,6 +1,7 @@
 package com.kanven.practice.file.watcher.jdk;
 
 
+import com.kanven.practice.file.extension.SpiMate;
 import com.kanven.practice.file.watcher.DirectorWatcher;
 import com.kanven.practice.file.watcher.Event;
 import com.kanven.practice.file.watcher.Watcher;
@@ -22,6 +23,7 @@ import java.util.concurrent.Executors;
  * @author kanven
  */
 @Slf4j
+@SpiMate(name = "native")
 public class NativeDirectorWatcher extends DirectorWatcher {
 
     private final List<Path> paths = new ArrayList<>(0);

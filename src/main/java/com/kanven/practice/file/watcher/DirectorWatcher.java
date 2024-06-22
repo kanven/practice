@@ -1,5 +1,7 @@
 package com.kanven.practice.file.watcher;
 
+import com.kanven.practice.file.extension.Scope;
+import com.kanven.practice.file.extension.Spi;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Closeable;
@@ -10,6 +12,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Slf4j
+@Spi(scope = Scope.PROTOTYPE)
 public abstract class DirectorWatcher implements Closeable {
 
     private final AtomicInteger state = new AtomicInteger(State.INITED.state);

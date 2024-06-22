@@ -1,6 +1,8 @@
 package com.kanven.practice.file.bulk;
 
 import com.kanven.practice.Configuration;
+import com.kanven.practice.file.extension.Scope;
+import com.kanven.practice.file.extension.Spi;
 
 import java.io.Closeable;
 import java.io.File;
@@ -10,6 +12,7 @@ import java.nio.charset.Charset;
 
 import static com.kanven.practice.Configuration.LEECH_BULK_FETCH_HISTORY;
 
+@Spi(scope = Scope.PROTOTYPE)
 public abstract class BulkReader implements Closeable {
 
     protected final RandomAccessFile raf;
@@ -30,7 +33,6 @@ public abstract class BulkReader implements Closeable {
         }
     }
 
-    public abstract void read(Listener listener) throws Exception;
 
     public long delta() throws Exception {
         return this.raf.length() - offset;
@@ -39,5 +41,7 @@ public abstract class BulkReader implements Closeable {
     public void close() throws IOException {
         this.raf.close();
     }
+
+    public abstract void read(Listener listener) throws Exception;
 
 }

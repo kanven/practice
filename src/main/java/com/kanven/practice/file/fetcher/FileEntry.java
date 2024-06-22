@@ -5,12 +5,11 @@ import com.kanven.practice.file.bulk.Listener;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.util.Comparator;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
-class FileEntry implements Comparator<FileEntry> {
+class FileEntry {
 
     private String dir;
 
@@ -85,12 +84,8 @@ class FileEntry implements Comparator<FileEntry> {
         return this.status;
     }
 
-    public String getDir() {
+    String getDir() {
         return dir;
-    }
-
-    public void setDir(String dir) {
-        this.dir = dir;
     }
 
     public String getName() {
@@ -99,11 +94,6 @@ class FileEntry implements Comparator<FileEntry> {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    @Override
-    public int compare(FileEntry first, FileEntry second) {
-        return 0;
     }
 
     @Override
@@ -119,6 +109,5 @@ class FileEntry implements Comparator<FileEntry> {
     public int hashCode() {
         return Objects.hash(dir, name);
     }
-
 
 }
