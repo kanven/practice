@@ -8,7 +8,7 @@ import java.nio.charset.Charset;
 @SpiMate(name = "random")
 public class FileRandomBulkReader extends BulkReader {
 
-    public FileRandomBulkReader(File file, Charset charset) throws Exception {
+    public FileRandomBulkReader(File file, String charset) throws Exception {
         super(file, charset);
     }
 

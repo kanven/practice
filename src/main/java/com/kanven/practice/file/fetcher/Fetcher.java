@@ -29,7 +29,7 @@ public class Fetcher implements Executor<FileEntry> {
 
     public Fetcher() {
         this.watcher = DefaultExtensionLoader.load(DirectorWatcher.class).getExtension(Configuration.getString(LEECH_DIR_WATCHER_NAME, "default"), new ArrayList<Object>() {{
-            add(Configuration.getString(LEECH_DIR, ""));
+            add(Configuration.getString(LEECH_DIR));
             add(Configuration.getBoolean(LEECH_DIR_WATCHER_RECURSION, false));
         }});
         this.init();
@@ -42,10 +42,7 @@ public class Fetcher implements Executor<FileEntry> {
                     String path = event.getParent().toString() + File.separator + event.getChild();
                     File file = new File(path);
                     if (file.isFile()) {
-                        BulkReader reader = DefaultExtensionLoader.load(BulkReader.class).getExtension(Configuration.getString(LEECH_BULK_READER_NAME, "random"), new ArrayList<Object>() {{
-                            add(file);
-                        }});
-                        entries.add(new FileEntry(event.getParent().toString(), event.getChild().toString(), (BulkReader) reader));
+                        entries.add(new FileEntry(event.getParent().toString(), event.getChild().toString(), createBulkReader(file)));
                     }
                     break;
                 case RENAME:
@@ -60,10 +57,7 @@ public class Fetcher implements Executor<FileEntry> {
                     if (file.isFile()) {
                         fes = filterEntries(event, entries);
                         if (fes.isEmpty()) {
-                            BulkReader reader = DefaultExtensionLoader.load(BulkReader.class).getExtension(Configuration.getString(LEECH_BULK_READER_NAME, "random"), new ArrayList<Object>() {{
-                                add(file);
-                            }});
-                            FileEntry entry = new FileEntry(event.getParent().toString(), event.getChild().toString(), (BulkReader) reader);
+                            FileEntry entry = new FileEntry(event.getParent().toString(), event.getChild().toString(), createBulkReader(file));
                             entries.add(entry);
                             fes.add(entry);
                         }
@@ -109,6 +103,13 @@ public class Fetcher implements Executor<FileEntry> {
     private List<FileEntry> filterEntries(String dir, String name, List<FileEntry> entries) {
         return entries.stream().filter(entry -> entry.getDir().equals(name)
                 && entry.getDir().equals(dir)).collect(Collectors.toList());
+    }
+
+    private BulkReader createBulkReader(File file) {
+        return DefaultExtensionLoader.load(BulkReader.class).getExtension(Configuration.getString(LEECH_BULK_READER_NAME, "random"), new ArrayList<Object>() {{
+            add(file);
+            add(Configuration.getString(LEECH_CHARSET, "UTF-8"));
+        }});
     }
 
 }

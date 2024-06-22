@@ -23,9 +23,9 @@ public abstract class BulkReader implements Closeable {
 
     protected long size = -1;
 
-    public BulkReader(File file, Charset charset) throws Exception {
+    public BulkReader(File file, String charset) throws Exception {
         this.raf = new RandomAccessFile(file, "r");
-        this.charset = charset;
+        this.charset = Charset.forName(charset);
         this.size = this.raf.length();
         boolean history = Configuration.getBoolean(LEECH_BULK_FETCH_HISTORY, false);
         if (!history) {

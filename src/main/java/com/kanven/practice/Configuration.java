@@ -37,6 +37,10 @@ public class Configuration {
         return properties.getProperty(key, defaultValue);
     }
 
+    public static String getString(String key) {
+        return properties.getProperty(key);
+    }
+
     public static boolean getBoolean(String key, boolean defaultValue) {
         String value = properties.getProperty(key);
         if (StringUtils.isNoneBlank(value)) {

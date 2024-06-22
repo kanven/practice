@@ -40,7 +40,7 @@ public class DefaultExtensionLoader<T> extends AbstractExtensionLoader<T> {
             } finally {
                 lock.unlock();
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             // TODO
             throw new RuntimeException(e);
         }
@@ -52,11 +52,13 @@ public class DefaultExtensionLoader<T> extends AbstractExtensionLoader<T> {
             return clazz.newInstance();
         } else {
             Class<?>[] types = new Class<?>[params.size()];
+            Object[] pvs = new Object[params.size()];
             for (int i = 0, len = params.size(); i < len; i++) {
                 types[i] = params.get(i).getClass();
+                pvs[i] = params.get(i);
             }
             Constructor<T> constructor = clazz.getConstructor(types);
-            return constructor.newInstance(params);
+            return constructor.newInstance(pvs);
         }
     }
 
@@ -77,6 +79,5 @@ public class DefaultExtensionLoader<T> extends AbstractExtensionLoader<T> {
         }
         return loader;
     }
-
 
 }
