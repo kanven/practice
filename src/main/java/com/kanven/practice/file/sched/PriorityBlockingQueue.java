@@ -1,4 +1,4 @@
-package com.kanven.practice.file.fetcher.sched;
+package com.kanven.practice.file.sched;
 
 import java.util.AbstractQueue;
 import java.util.Collection;

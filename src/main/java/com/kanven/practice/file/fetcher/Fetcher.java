@@ -3,7 +3,6 @@ package com.kanven.practice.file.fetcher;
 import com.kanven.practice.Configuration;
 import com.kanven.practice.file.bulk.*;
 import com.kanven.practice.file.extension.DefaultExtensionLoader;
-import com.kanven.practice.file.fetcher.sched.Executor;
 import com.kanven.practice.file.watcher.DirectorWatcher;
 import com.kanven.practice.file.watcher.Event;
 import lombok.extern.slf4j.Slf4j;
@@ -17,15 +16,11 @@ import java.util.stream.Collectors;
 import static com.kanven.practice.Configuration.*;
 
 @Slf4j
-public class Fetcher implements Executor<FileEntry> {
+public class Fetcher {
 
     private final CopyOnWriteArrayList<FileEntry> entries = new CopyOnWriteArrayList<>();
 
-    private final CopyOnWriteArrayList<Listener> listeners = new CopyOnWriteArrayList<>();
-
     private final DirectorWatcher watcher;
-
-    private final ListenerWrapper wrapper = new ListenerWrapper();
 
     public Fetcher() {
         this.watcher = DefaultExtensionLoader.load(DirectorWatcher.class).getExtension(Configuration.getString(LEECH_DIR_WATCHER_NAME, "default"), new ArrayList<Object>() {{
@@ -57,7 +52,11 @@ public class Fetcher implements Executor<FileEntry> {
                     if (file.isFile()) {
                         fes = filterEntries(event, entries);
                         if (fes.isEmpty()) {
-                            FileEntry entry = new FileEntry(event.getParent().toString(), event.getChild().toString(), createBulkReader(file));
+                            BulkReader reader = createBulkReader(file);
+                            String parent = event.getParent().toString();
+                            String child = event.getChild().toString();
+                            //FileEntry entry = new FileEntry(parent,child , reader);
+                            FileEntry entry = new FileEntry();
                             entries.add(entry);
                             fes.add(entry);
                         }
@@ -75,25 +74,6 @@ public class Fetcher implements Executor<FileEntry> {
         watcher.start();
     }
 
-    @Override
-    public void execute(FileEntry entry) {
-        try {
-            if (entry.status().running()) {
-                entry.read(wrapper);
-            }
-        } catch (Exception e) {
-            log.error("", e);
-        }
-    }
-
-    private class ListenerWrapper implements Listener {
-
-        @Override
-        public void listen(String line) {
-            listeners.forEach(listener -> listener.listen(line));
-        }
-
-    }
 
     private List<FileEntry> filterEntries(Event event, List<FileEntry> entries) {
         return entries.stream().filter(entry -> entry.getName().equals(event.getChild().toString())

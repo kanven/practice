@@ -15,9 +15,10 @@ public class FileRandomBulkReader extends BulkReader {
     @Override
     public void read(Listener listener) throws Exception {
         this.size = this.raf.length();//size大小不准
-        if (this.offset == this.size) {
+        if (this.offset + 1 == this.size) {
             return;
         }
+        //注意未成line时文件offset处理
         while (this.offset < this.size) {
             this.raf.seek(this.offset);
             byte[] buffer = new byte[1024];
@@ -31,8 +32,10 @@ public class FileRandomBulkReader extends BulkReader {
                             case '\n':
                                 seenCR = false;
                                 String str = new String(line.toByteArray(), charset);
+                                long end = this.offset + line.size();
                                 line.reset();
-                                listener.listen(str);
+                                listener.listen(new Listener.Content(file, str, this.offset + 1, end));
+                                this.offset = end;
                                 break;
                             case '\r':
                                 if (seenCR) {
@@ -44,8 +47,9 @@ public class FileRandomBulkReader extends BulkReader {
                                 if (seenCR) {
                                     seenCR = false;
                                     str = new String(line.toByteArray(), charset);
+                                    end = this.offset + line.size();
                                     line.reset();
-                                    listener.listen(str);
+                                    listener.listen(new Listener.Content(file, str, this.offset + 1, end));
                                 }
                                 line.write(b);
                                 break;
@@ -53,7 +57,6 @@ public class FileRandomBulkReader extends BulkReader {
                     }
                 }
             }
-            this.offset = this.raf.getFilePointer();
         }
     }
 

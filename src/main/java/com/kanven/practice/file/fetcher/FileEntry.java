@@ -1,15 +1,20 @@
 package com.kanven.practice.file.fetcher;
 
+import com.kanven.practice.Configuration;
 import com.kanven.practice.file.bulk.BulkReader;
 import com.kanven.practice.file.bulk.Listener;
+import com.kanven.practice.file.extension.DefaultExtensionLoader;
+import com.kanven.practice.file.sched.strategy.Strategy;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.kanven.practice.Configuration.*;
+
 @Slf4j
-class FileEntry {
+public final class FileEntry {
 
     private String dir;
 
@@ -20,6 +25,10 @@ class FileEntry {
     private final FileEntryStatus status = new FileEntryStatus();
 
     private final AtomicInteger times = new AtomicInteger();
+
+    public FileEntry(){
+
+    }
 
     FileEntry(String dir, String name, BulkReader reader) {
         this.dir = dir;
@@ -32,16 +41,18 @@ class FileEntry {
         if (status.isSuspend()) {
             if (status.pending()) {
                 //加入待调度任务
-                Context.getInstance().getResources().add(this);
+                buildStrategy().add(this);
             }
         }
     }
 
-    void read(Listener listener) {
+    public void read(Listener listener) {
         if (this.times.get() == 0 || status.isPending()) {
             return;
         }
+
         try {
+            status.running();
             reader.read(listener);
         } catch (Exception e) {
             log.error(dir + File.separator + name + "'s content read occur an error!", e);
@@ -61,13 +72,18 @@ class FileEntry {
                 }
                 if (this.times.get() > 0 && status.pending()) {
                     //加入待调度任务
-                    Context.getInstance().getResources().add(this);
+                    buildStrategy().add(this);
                 }
             } catch (Exception e) {
                 log.error("", e);
             }
         }
+    }
 
+    private Strategy<FileEntry> buildStrategy() {
+        Strategy<FileEntry> strategy = (Strategy<FileEntry>) DefaultExtensionLoader.load(Strategy.class).getExtension(Configuration.getString(LEECH_SCHED_STRATEGY_NAME, "FIFO"));
+        strategy.add(this);
+        return strategy;
     }
 
     public void close() {

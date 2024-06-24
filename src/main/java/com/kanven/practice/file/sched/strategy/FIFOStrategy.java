@@ -1,12 +1,13 @@
-package com.kanven.practice.file.fetcher.sched;
+package com.kanven.practice.file.sched.strategy;
 
-import com.kanven.practice.file.fetcher.sched.Strategy;
+import com.kanven.practice.file.extension.SpiMate;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Slf4j
+@SpiMate(name = "FIFO")
 public class FIFOStrategy<E> implements Strategy<E> {
 
     private final BlockingQueue<E> pending = new LinkedBlockingQueue<>();
@@ -22,7 +23,12 @@ public class FIFOStrategy<E> implements Strategy<E> {
 
     @Override
     public E pickOut() {
-        return pending.poll();
+        try {
+            return pending.take();
+        } catch (Exception e) {
+            log.error("", e);
+            return null;
+        }
     }
 
 }

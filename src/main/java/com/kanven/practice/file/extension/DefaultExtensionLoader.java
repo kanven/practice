@@ -48,6 +48,9 @@ public class DefaultExtensionLoader<T> extends AbstractExtensionLoader<T> {
 
     public T createInstance(String name, List<?> params) throws Exception {
         Class<T> clazz = serviceLoader.getClass(name);
+        if (clazz == null) {
+            throw new ClassNotFoundException(name);
+        }
         if (params == null || params.isEmpty()) {
             return clazz.newInstance();
         } else {

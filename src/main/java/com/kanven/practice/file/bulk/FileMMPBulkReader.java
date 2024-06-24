@@ -30,20 +30,19 @@ public class FileMMPBulkReader extends BulkReader {
         for (long p = 1; p <= page; p++) {
             long pageSize = p * Integer.MAX_VALUE > delta ? delta - (p - 1) * Integer.MAX_VALUE : Integer.MAX_VALUE;
             MappedByteBuffer buffer = this.channel.map(FileChannel.MapMode.READ_ONLY, offset, pageSize);
+            int cap = buffer.capacity();
             try (ByteArrayOutputStream line = new ByteArrayOutputStream()) {
-                int cap = buffer.capacity();
                 boolean seenCR = false;
-                int pos = 0;
                 for (int i = 0; i < cap; i++) {
                     byte b = buffer.get(i);
                     switch (b) {
                         case '\n':
                             seenCR = false;
                             String str = new String(line.toByteArray(), charset);
+                            long end = this.offset + line.size();
                             line.reset();
-                            listener.listen(str);
-                            offset += i - pos;
-                            pos = i;
+                            listener.listen(new Listener.Content(file, str, this.offset + 1, end));
+                            this.offset = end;
                             break;
                         case '\r':
                             if (seenCR) {
@@ -55,10 +54,10 @@ public class FileMMPBulkReader extends BulkReader {
                             if (seenCR) {
                                 seenCR = false;
                                 str = new String(line.toByteArray(), charset);
+                                end = this.offset + line.size();
                                 line.reset();
-                                listener.listen(str);
-                                offset += i - pos;
-                                pos = i;
+                                listener.listen(new Listener.Content(file, str, this.offset + 1, end));
+                                this.offset = end;
                             }
                             line.write(b);
                             break;

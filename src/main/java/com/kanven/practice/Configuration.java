@@ -77,4 +77,16 @@ public class Configuration {
 
     public final static String LEECH_BULK_FETCH_HISTORY = "leech.bulk.reader.fetch.history";
 
+    public final static String LEECH_SCHED_STRATEGY_NAME = "leech.sched.strategy.name";
+
+    public final static String LEECH_SCHED_EXECUTOR_THREAD_CORE = "leech.sched.executor.thread.core";
+
+    public final static String LEECH_SCHED_EXECUTOR_THREAD_MAX = "leech.sched.executor.thread.max";
+
+    public final static String LEECH_EXECUTOR_MODE = "leech.executor.mode";
+
+    public final static String LEECH_EXECUTOR_LOG_REGULAR = "leech.executor.log.regular";
+
+    public final static String LEECH_EXECUTOR_LOG_FILTER ="leech.executor.log.filter";
+
 }

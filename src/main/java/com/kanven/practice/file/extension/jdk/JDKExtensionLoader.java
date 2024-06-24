@@ -20,7 +20,7 @@ public class JDKExtensionLoader<T> extends AbstractExtensionLoader<T> {
     protected T doInit(String name, List<?> params) {
         loader.forEach(instance -> {
             String metaName = com.kanven.practice.file.extension.ServiceLoader.getSpiMeta(instance.getClass());
-            if (metaName.equals(name)) {
+            if (name.equals(metaName)) {
                 extensions.computeIfAbsent(name, key -> instance);
             }
         });

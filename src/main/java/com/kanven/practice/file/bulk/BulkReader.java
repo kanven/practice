@@ -15,15 +15,18 @@ import static com.kanven.practice.Configuration.LEECH_BULK_FETCH_HISTORY;
 @Spi(scope = Scope.PROTOTYPE)
 public abstract class BulkReader implements Closeable {
 
-    protected final RandomAccessFile raf;
+    protected final File file;
 
-    protected final Charset charset;
+    final RandomAccessFile raf;
 
-    protected long offset = 0;
+    final Charset charset;
 
-    protected long size = -1;
+    long offset = 0;
+
+    long size = -1;
 
     public BulkReader(File file, String charset) throws Exception {
+        this.file = file;
         this.raf = new RandomAccessFile(file, "r");
         this.charset = Charset.forName(charset);
         this.size = this.raf.length();
