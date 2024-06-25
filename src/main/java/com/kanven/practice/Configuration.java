@@ -85,8 +85,5 @@ public class Configuration {
 
     public final static String LEECH_EXECUTOR_MODE = "leech.executor.mode";
 
-    public final static String LEECH_EXECUTOR_LOG_REGULAR = "leech.executor.log.regular";
-
-    public final static String LEECH_EXECUTOR_LOG_FILTER ="leech.executor.log.filter";
 
 }

@@ -26,11 +26,11 @@ public class FileMMPBulkReader extends BulkReader {
         if (delta % Integer.MAX_VALUE != 0) {
             page += 1;
         }
-        for (long p = 1; p <= page; p++) {
-            long pageSize = p * Integer.MAX_VALUE > delta ? delta - (p - 1) * Integer.MAX_VALUE : Integer.MAX_VALUE;
-            MappedByteBuffer buffer = this.channel.map(FileChannel.MapMode.READ_ONLY, offset, pageSize);
-            int cap = buffer.capacity();
-            try (ByteArrayOutputStream line = new ByteArrayOutputStream()) {
+        try (ByteArrayOutputStream line = new ByteArrayOutputStream()) {
+            for (long p = 1; p <= page; p++) {
+                long pageSize = p * Integer.MAX_VALUE > delta ? delta - (p - 1) * Integer.MAX_VALUE : Integer.MAX_VALUE;
+                MappedByteBuffer buffer = this.channel.map(FileChannel.MapMode.READ_ONLY, offset, pageSize);
+                int cap = buffer.capacity();
                 boolean seenCR = false;
                 for (int i = 0; i < cap; i++) {
                     byte b = buffer.get(i);

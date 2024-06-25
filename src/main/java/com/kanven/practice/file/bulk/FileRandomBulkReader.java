@@ -18,13 +18,13 @@ public class FileRandomBulkReader extends BulkReader {
         if (this.offset + 1 == this.size) {
             return;
         }
+        this.raf.seek(this.offset);
         //注意未成line时文件offset处理
-        while (this.offset < this.size) {
-            this.raf.seek(this.offset);
-            byte[] buffer = new byte[1024];
-            while (this.raf.read(buffer) > 0) {
-                try (ByteArrayOutputStream line = new ByteArrayOutputStream()) {
-                    int len = buffer.length;
+        try (ByteArrayOutputStream line = new ByteArrayOutputStream()) {
+            while (this.offset < this.size) {
+                int len;
+                byte[] buffer = new byte[1024];
+                while ((len = this.raf.read(buffer)) > 0) {
                     boolean seenCR = false;
                     for (int i = 0; i < len; i++) {
                         byte b = buffer[i];
