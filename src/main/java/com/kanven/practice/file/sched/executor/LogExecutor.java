@@ -20,8 +20,6 @@ import static com.kanven.practice.Configuration.*;
 @SpiMate(name = "log")
 public class LogExecutor implements Executor<FileEntry>, Listener {
 
-    public static final String line_break = "\r\n";
-
     private Filter filter = DefaultExtensionLoader.load(Filter.class).getExtension(Configuration.getString(LEECH_EXECUTOR_LOG_FILTER, "text"), new ArrayList<Object>() {
         {
             add(Configuration.getString(LEECH_EXECUTOR_LOG_REGULAR));
@@ -46,14 +44,14 @@ public class LogExecutor implements Executor<FileEntry>, Listener {
             //之前存在内容
             if (filter.filter(line)) {
                 //新起一行
-                System.out.println(date + line + line_break);
+                System.out.println(date + line);
                 contents.remove(content.getFile());
             }
-            contents.put(content.getFile(), line + line_break);
+            contents.put(content.getFile(), line);
         } else {
             //首次
             if (filter.filter(content.getLine())) {
-                String line = content.getLine() + line_break;
+                String line = content.getLine();
                 contents.put(content.getFile(), line);
             }
         }
