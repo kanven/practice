@@ -55,8 +55,7 @@ public class Fetcher {
                             BulkReader reader = createBulkReader(file);
                             String parent = event.getParent().toString();
                             String child = event.getChild().toString();
-                            //FileEntry entry = new FileEntry(parent,child , reader);
-                            FileEntry entry = new FileEntry();
+                            FileEntry entry = new FileEntry(parent,child , reader);
                             entries.add(entry);
                             fes.add(entry);
                         }

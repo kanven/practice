@@ -24,6 +24,10 @@ public class ScheduleEngine<E> implements Closeable {
 
     private ExecutorService scheduler = Executors.newSingleThreadExecutor(r -> new Thread(r, "Schedule-Engine-Scheduler"));
 
+    private ThreadPoolExecutor pool = createThreadPoolExecutor();
+
+    private Executor<E> executor = executor();
+
     private volatile boolean init = false;
 
     public synchronized void start() {
@@ -35,7 +39,12 @@ public class ScheduleEngine<E> implements Closeable {
                 try {
                     E entry = strategy().pickOut();
                     if (entry != null) {
-                        executorService().submit(() -> executor().execute(entry));
+                        this.pool.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                executor.execute(entry);
+                            }
+                        });
                     }
                 } catch (Exception e) {
                     log.error("", e);
@@ -50,12 +59,12 @@ public class ScheduleEngine<E> implements Closeable {
     public synchronized void close() throws IOException {
         if (init) {
             scheduler.shutdown();
-            executorService().shutdown();
+            this.pool.shutdown();
             init = false;
         }
     }
 
-    private ExecutorService executorService() {
+    private ThreadPoolExecutor createThreadPoolExecutor() {
         return new ThreadPoolExecutor(Configuration.getInteger(LEECH_SCHED_EXECUTOR_THREAD_CORE, 2),
                 Configuration.getInteger(LEECH_SCHED_EXECUTOR_THREAD_MAX, 2), 0, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<>(20), r -> new Thread(r, "Schedule-Engine-Executor"));
 
@@ -71,11 +80,8 @@ public class ScheduleEngine<E> implements Closeable {
 
     public static void main(String[] args) {
         new Fetcher();
-        while (true){
-
-        }
-        //ScheduleEngine<FileEntry> engine = new ScheduleEngine<>();
-        //engine.start();
+        ScheduleEngine<FileEntry> engine = new ScheduleEngine<>();
+        engine.start();
     }
 
 }

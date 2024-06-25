@@ -17,7 +17,7 @@ public class ExecutorFilter implements Filter {
     @Override
     public boolean filter(String line) {
         Matcher matcher = pattern.matcher(line);
-        return matcher.matches();
+        return matcher.find();
     }
 
 }

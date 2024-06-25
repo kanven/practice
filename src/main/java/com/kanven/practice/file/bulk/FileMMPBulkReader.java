@@ -5,7 +5,6 @@ import com.kanven.practice.file.extension.SpiMate;
 import java.io.*;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
 
 @SpiMate(name = "mmp")
 public class FileMMPBulkReader extends BulkReader {

@@ -22,13 +22,9 @@ public final class FileEntry {
 
     private BulkReader reader;
 
-    private final FileEntryStatus status = new FileEntryStatus();
+    private FileEntryStatus status = new FileEntryStatus();
 
     private final AtomicInteger times = new AtomicInteger();
-
-    public FileEntry(){
-
-    }
 
     FileEntry(String dir, String name, BulkReader reader) {
         this.dir = dir;
@@ -47,12 +43,10 @@ public final class FileEntry {
     }
 
     public void read(Listener listener) {
-        if (this.times.get() == 0 || status.isPending()) {
+        if (this.times.get() == 0 || !status.running()) {
             return;
         }
-
         try {
-            status.running();
             reader.read(listener);
         } catch (Exception e) {
             log.error(dir + File.separator + name + "'s content read occur an error!", e);
@@ -94,6 +88,10 @@ public final class FileEntry {
                 log.error("the reader close occur an error", e);
             }
         }
+    }
+
+    public int times() {
+        return times.get();
     }
 
     FileEntryStatus status() {

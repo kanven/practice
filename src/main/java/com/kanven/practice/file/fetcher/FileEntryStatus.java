@@ -1,8 +1,11 @@
 package com.kanven.practice.file.fetcher;
 
+import lombok.extern.slf4j.Slf4j;
 import sun.misc.Unsafe;
 
+import java.lang.reflect.Field;
 
+@Slf4j
 class FileEntryStatus {
 
     private volatile int state = SUSPEND;
@@ -39,15 +42,19 @@ class FileEntryStatus {
         return unsafe.compareAndSwapInt(this, stateOffset, expect, update);
     }
 
-    private static final Unsafe unsafe = Unsafe.getUnsafe();
+    private static final Unsafe unsafe;
 
     private static final long stateOffset;
 
     static {
         try {
+            Field field = Unsafe.class.getDeclaredField("theUnsafe");
+            field.setAccessible(true);
+            unsafe = (Unsafe) field.get(null);
             stateOffset = unsafe.objectFieldOffset
                     (FileEntryStatus.class.getDeclaredField("state"));
         } catch (Exception e) {
+            log.error("handler unsafe occur an error", e);
             throw new Error(e);
         }
     }
@@ -66,5 +73,10 @@ class FileEntryStatus {
      * 运行态
      */
     private static final int RUNNING = 1;
+
+    public static void main(String[] args) {
+        FileEntryStatus status = new FileEntryStatus();
+        System.out.print(status.isSuspend());
+    }
 
 }

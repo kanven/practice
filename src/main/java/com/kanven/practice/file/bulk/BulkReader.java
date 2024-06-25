@@ -32,6 +32,7 @@ public abstract class BulkReader implements Closeable {
         this.size = this.raf.length();
         boolean history = Configuration.getBoolean(LEECH_BULK_FETCH_HISTORY, false);
         if (!history) {
+            //TODO 丢失第一次修改内容
             offset = size;
         }
     }
